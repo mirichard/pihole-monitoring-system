@@ -32,7 +32,7 @@ A comprehensive monitoring and alerting system for Pi-hole DNS servers with inte
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pihole-monitoring-system.git
+git clone https://github.com/mirichard/pihole-monitoring-system.git
 cd pihole-monitoring-system
 
 # Install scripts
