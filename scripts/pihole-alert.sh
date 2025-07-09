@@ -45,13 +45,14 @@ temp=$(vcgencmd measure_temp | sed "s/temp=//" | sed "s/'C//")
 load=$(uptime | awk -F"load average:" "{print \$2}" | awk -F"," "{print \$1}" | tr -d " ")
 memory_used=$(free | awk "/Mem:/ {printf(\"%d\", \$3/\$2 * 100)}")
 disk_used=$(df -h / | awk "NR==2 {print \$5}" | sed "s/%//")
-cpu_freq=$(vcgencmd measure_clock arm | awk -F"=" "{printf \"%.0f\", \$2 / 1000000}")
+cpu_freq=$(vcgencmd measure_clock arm | awk -F"=" "{printf \"%.0f\", \$2 / 10000000}")
 voltage=$(vcgencmd measure_volts core | sed "s/volt=//" | sed "s/V//")
 
 # Get Pi-hole stats
-blocked_domains=$(pihole -c -j 2>/dev/null | grep "domains_being_blocked" | cut -d":" -f2 | tr -d ", " | head -1)
-ads_blocked_today=$(pihole -c -j 2>/dev/null | grep "ads_blocked_today" | cut -d":" -f2 | tr -d ", " | head -1)
-dns_queries_today=$(pihole -c -j 2>/dev/null | grep "dns_queries_today" | cut -d":" -f2 | tr -d ", " | head -1)
+# Get Pi-hole stats using database queries (new method)
+blocked_domains=$(sudo sqlite3 /etc/pihole/gravity.db "SELECT COUNT(*) FROM gravity;" 2>/dev/null || echo "0")
+ads_blocked_today=$(sudo sqlite3 /etc/pihole/pihole-FTL.db "SELECT COUNT(*) FROM queries WHERE (status = 1 OR status = 4 OR status = 5 OR status = 6 OR status = 7 OR status = 8 OR status = 9 OR status = 10 OR status = 11) AND timestamp >= strftime('%s', datetime('now', 'start of day'));" 2>/dev/null || echo "0")
+dns_queries_today=$(sudo sqlite3 /etc/pihole/pihole-FTL.db "SELECT COUNT(*) FROM queries WHERE timestamp >= strftime('%s', datetime('now', 'start of day'));" 2>/dev/null || echo "0")
 
 # Set defaults for empty values
 blocked_domains=${blocked_domains:-0}
@@ -182,7 +183,7 @@ if $network_down; then
 fi
 
 # Pi-hole Blocking Effectiveness Check
-if [ "$blocked_domains" -lt 100000 ]; then
+if [ "$blocked_domains" -lt 1000000 ]; then
     alert_message="${alert_message}WARNING: Low number of blocked domains: ${blocked_domains}\\n"
 fi
 
