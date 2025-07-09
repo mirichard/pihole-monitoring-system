@@ -48,11 +48,16 @@ sudo chmod 644 /var/log/pihole-monitor.log
 
 ### 2. Configuration
 
-Edit `/usr/local/bin/pihole-alert.sh` to configure your email address:
+**Important:** Before using the system, you must configure your email address.
 
+Edit `/usr/local/bin/pihole-alert.sh` and find this line:
 ```bash
-# Change this line to your email
-mail -s "..." your-email@example.com
+mail -s "${subject_prefix}: Issues Detected on $(hostname)" your-email@example.com
+```
+
+Change `your-email@example.com` to your actual email address:
+```bash
+mail -s "${subject_prefix}: Issues Detected on $(hostname)" your-email@domain.com
 ```
 
 ### 3. Test the System

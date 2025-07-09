@@ -53,9 +53,22 @@ MAINTENANCE_FILE="/tmp/maintenance_mode"  # Maintenance mode flag file
 ```
 
 ### Email Configuration
-The script sends alerts to: `your-email@example.com`
 
-To change the email address, modify the mail command in the script:
+**IMPORTANT:** You must configure your email address before the system will work.
+
+The script sends alerts to: `your-email@example.com` (placeholder)
+
+To change the email address, edit `/usr/local/bin/pihole-alert.sh` and find this line:
+```bash
+mail -s "${subject_prefix}: Issues Detected on $(hostname)" your-email@example.com
+```
+
+Replace `your-email@example.com` with your actual email address:
+```bash
+mail -s "${subject_prefix}: Issues Detected on $(hostname)" your-email@domain.com
+```
+
+**Note:** Make sure your system has mail configured (postfix, sendmail, etc.) to send emails.
 ```bash
 mail -s "..." your-email@example.com
 ```
