@@ -190,7 +190,7 @@ fi
 blocking_rate=0
 if [ "$dns_queries_today" -gt 0 ]; then
     blocking_rate=$(echo "scale=2; $ads_blocked_today * 100 / $dns_queries_today" | bc)
-    if (( $(echo "$blocking_rate < 2" | bc -l) )); then
+    if (( $(echo "$blocking_rate < 5" | bc -l) )); then
         alert_message="${alert_message}WARNING: Low blocking rate: ${blocking_rate}%\\n"
     fi
 fi
