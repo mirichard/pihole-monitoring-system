@@ -226,7 +226,7 @@ Maintenance Mode: $(is_maintenance_mode && echo "ACTIVE" || echo "inactive")"
     fi
 
     # Send email with full report
-    echo -e "${subject_prefix} Report - ${timestamp}\\n\\nALERTS:\\n${alert_message}\\n${system_status}" | mail -s "${subject_prefix}: Issues Detected on $(hostname)" michaelrichard4@gmail.com
+    echo -e "${subject_prefix} Report - ${timestamp}\\n\\nALERTS:\\n${alert_message}\\n${system_status}" | mail -s "${subject_prefix}: Issues Detected on $(hostname)" your-email@example.com
     
     log_message "Alert sent - Issues detected and reported"
     echo "Alert sent - Issues detected and reported"

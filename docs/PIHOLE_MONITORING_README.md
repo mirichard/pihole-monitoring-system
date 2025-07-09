@@ -53,7 +53,7 @@ MAINTENANCE_FILE="/tmp/maintenance_mode"  # Maintenance mode flag file
 ```
 
 ### Email Configuration
-The script sends alerts to: `michaelrichard4@gmail.com`
+The script sends alerts to: `your-email@example.com`
 
 To change the email address, modify the mail command in the script:
 ```bash
@@ -228,7 +228,7 @@ set +x  # Disable debug mode
 ## Sample Alert Email
 
 ```
-Subject: Pi-hole Alert: Issues Detected on pi-server
+Subject: Pi-hole Alert: Issues Detected on your-hostname
 
 Pi-hole Alert Report - 2025-07-09 08:52:19
 
