@@ -1,0 +1,159 @@
+#!/bin/bash
+
+MAINTENANCE_FILE="/tmp/maintenance_mode"
+SCRIPT_NAME=$(basename "$0")
+
+show_help() {
+    cat << 'HELP'
+Usage: maintenance-mode [COMMAND] [OPTIONS]
+
+Control maintenance mode for Pi-hole monitoring alerts.
+
+Commands:
+    on              Enable maintenance mode
+    off             Disable maintenance mode
+    status          Show current maintenance mode status
+    help            Show this help message
+
+Options for 'on' command:
+    -t, --time      Duration in minutes (default: 60)
+    -r, --reason    Reason for maintenance (optional)
+
+Examples:
+    maintenance-mode on                    # Enable for 60 minutes
+    maintenance-mode on -t 30              # Enable for 30 minutes  
+    maintenance-mode on -t 120 -r "System updates"
+    maintenance-mode off                   # Disable maintenance mode
+    maintenance-mode status                # Check current status
+
+During maintenance mode:
+- Service failure alerts are suppressed
+- System alerts (temperature, CPU, memory, disk) still fire
+- All alerts are prefixed with [MAINTENANCE MODE]
+- Maintenance mode automatically expires after the specified time
+
+HELP
+}
+
+log_maintenance() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | sudo tee -a /var/log/pihole-monitor.log > /dev/null 2>&1
+}
+
+enable_maintenance() {
+    local duration=60  # default 60 minutes
+    local reason=""
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -t|--time)
+                duration="$2"
+                shift 2
+                ;;
+            -r|--reason)
+                reason="$2"
+                shift 2
+                ;;
+            *)
+                echo "Unknown option: $1" >&2
+                exit 1
+                ;;
+        esac
+    done
+    
+    # Validate duration is a number
+    if ! [[ "$duration" =~ ^[0-9]+$ ]]; then
+        echo "Error: Duration must be a positive number" >&2
+        exit 1
+    fi
+    
+    local end_time=$(date -d "+${duration} minutes" "+%Y-%m-%d %H:%M:%S")
+    local end_epoch=$(date -d "+${duration} minutes" "+%s")
+    
+    # Create maintenance file with metadata
+    cat > "$MAINTENANCE_FILE" << MAINT_EOF
+# Maintenance mode activated
+# Start time: $(date "+%Y-%m-%d %H:%M:%S")
+# End time: $end_time
+# Duration: $duration minutes
+# Reason: ${reason:-"Not specified"}
+# End epoch: $end_epoch
+MAINT_EOF
+    
+    echo "✓ Maintenance mode enabled for $duration minutes"
+    echo "  Will automatically expire at: $end_time"
+    if [ ! -z "$reason" ]; then
+        echo "  Reason: $reason"
+    fi
+    
+    # Schedule automatic cleanup
+    (sleep $((duration * 60)) && rm -f "$MAINTENANCE_FILE" 2>/dev/null) &
+    
+    # Log the action
+    log_maintenance "Maintenance mode enabled for $duration minutes. Reason: ${reason:-"Not specified"}"
+}
+
+disable_maintenance() {
+    if [ -f "$MAINTENANCE_FILE" ]; then
+        rm -f "$MAINTENANCE_FILE"
+        echo "✓ Maintenance mode disabled"
+        log_maintenance "Maintenance mode manually disabled"
+    else
+        echo "Maintenance mode is not currently active"
+    fi
+}
+
+show_status() {
+    if [ -f "$MAINTENANCE_FILE" ]; then
+        echo "🔧 Maintenance mode is ACTIVE"
+        echo ""
+        
+        # Extract end epoch time
+        local end_epoch=$(grep "^# End epoch:" "$MAINTENANCE_FILE" | cut -d: -f2 | tr -d ' ')
+        local current_epoch=$(date "+%s")
+        
+        if [ ! -z "$end_epoch" ] && [ "$end_epoch" -gt "$current_epoch" ]; then
+            local remaining_seconds=$((end_epoch - current_epoch))
+            local remaining_minutes=$((remaining_seconds / 60))
+            
+            echo "Details:"
+            grep "^# Start time:" "$MAINTENANCE_FILE" | sed 's/^# /  /'
+            grep "^# End time:" "$MAINTENANCE_FILE" | sed 's/^# /  /'
+            grep "^# Duration:" "$MAINTENANCE_FILE" | sed 's/^# /  /'
+            grep "^# Reason:" "$MAINTENANCE_FILE" | sed 's/^# /  /'
+            echo "  Time remaining: $remaining_minutes minutes"
+        else
+            echo "⚠️  Maintenance mode file exists but appears expired"
+            echo "    Run 'maintenance-mode off' to clean up"
+        fi
+    else
+        echo "✓ Maintenance mode is inactive"
+        echo "  All alerts are operating normally"
+    fi
+}
+
+# Main script logic
+case "${1:-}" in
+    "on")
+        shift
+        enable_maintenance "$@"
+        ;;
+    "off")
+        disable_maintenance
+        ;;
+    "status")
+        show_status
+        ;;
+    "help"|"--help"|"-h")
+        show_help
+        ;;
+    "")
+        echo "Error: No command specified" >&2
+        echo "Run 'maintenance-mode help' for usage information" >&2
+        exit 1
+        ;;
+    *)
+        echo "Error: Unknown command '$1'" >&2
+        echo "Run 'maintenance-mode help' for usage information" >&2
+        exit 1
+        ;;
+esac

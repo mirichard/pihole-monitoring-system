@@ -1,0 +1,34 @@
+# Pi-hole Monitoring System - Cron Job Examples
+
+# To edit crontab:
+# sudo crontab -e
+
+# Run every 5 minutes
+*/5 * * * * /usr/local/bin/pihole-alert.sh
+
+# Run every 10 minutes
+*/10 * * * * /usr/local/bin/pihole-alert.sh
+
+# Run every 15 minutes
+*/15 * * * * /usr/local/bin/pihole-alert.sh
+
+# Run every 30 minutes
+*/30 * * * * /usr/local/bin/pihole-alert.sh
+
+# Run every hour
+0 * * * * /usr/local/bin/pihole-alert.sh
+
+# Run every hour during business hours (8 AM - 6 PM)
+0 8-18 * * * /usr/local/bin/pihole-alert.sh
+
+# Run every 5 minutes during daytime (6 AM - 10 PM)
+*/5 6-22 * * * /usr/local/bin/pihole-alert.sh
+
+# Run every 15 minutes during night (10 PM - 6 AM)
+*/15 22-23,0-5 * * * /usr/local/bin/pihole-alert.sh
+
+# Run with output redirection to avoid cron emails
+*/5 * * * * /usr/local/bin/pihole-alert.sh >/dev/null 2>&1
+
+# Run with custom log file
+*/5 * * * * /usr/local/bin/pihole-alert.sh >> /var/log/pihole-monitoring-cron.log 2>&1
