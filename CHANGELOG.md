@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - 2025-07-09
 
+### Fixed
+- **Pi-hole Statistics Reporting**: Updated script to use direct database queries instead of deprecated chronometer command
+- **Database Path Issues**: Fixed incorrect FTL database path from `/var/log/pihole/pihole-FTL.db` to `/etc/pihole/pihole-FTL.db`
+- **Blocked Domains Count**: Now correctly queries `gravity` table instead of `domainlist` table
+- **Query Logging**: Enabled Pi-hole query logging for proper statistics tracking
+- **Alert Thresholds**: Updated blocked domains threshold from 100,000 to 1,000,000
+
 ### Added
 - **Intelligent Retry Logic**: Services are now checked multiple times before alerting
 - **Maintenance Mode**: Suppress service alerts during planned maintenance

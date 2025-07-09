@@ -204,6 +204,9 @@ We welcome contributions! Here's how you can help:
 
 ## 🆘 Support
 
+### 📚 Troubleshooting Documentation
+- [Pi-hole Statistics Issue Resolution](docs/troubleshooting/2025-07-09_issue-resolution.md) - Fix for incorrect Pi-hole statistics reporting
+
 ### Getting Help
 1. 📖 Check the [documentation](docs/PIHOLE_MONITORING_README.md)
 2. 🔍 Search [existing issues](https://github.com/mirichard/pihole-monitoring-system/issues)
